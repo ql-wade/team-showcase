@@ -1,4 +1,4 @@
-// Agent Data
+// ==================== AGENT DATA ====================
 const agentData = {
     'Kev': {
         role: '协调官',
@@ -44,7 +44,7 @@ const agentData = {
     }
 };
 
-// Workflow Node Positions
+// ==================== WORKFLOW NODES ====================
 const workflowNodes = [
     { id: 'user', name: '用户输入', type: 'user', x: 0.1, y: 0.5 },
     { id: 'kev', name: 'Kev', type: 'coordinator', x: 0.3, y: 0.5 },
@@ -55,7 +55,7 @@ const workflowNodes = [
     { id: 'result', name: '返回用户', type: 'result', x: 0.9, y: 0.5 }
 ];
 
-// Workflow Edges (Data flow)
+// ==================== WORKFLOW EDGES ====================
 const workflowEdges = [
     { from: 'user', to: 'kev', type: 'request' },
     { from: 'kev', to: 'rex', type: 'dispatch' },
@@ -68,15 +68,30 @@ const workflowEdges = [
     { from: 'morgan', to: 'result', type: 'result' }
 ];
 
-// Canvas and Animation Variables
-let canvas, ctx;
-let animationId;
-let particles = [];
+// ==================== COLOR CONSTANTS ====================
+const COLORS = {
+    coordinator: '#6366f1',    // Cyber Purple
+    developer: '#06b6d4',      // Neon Blue
+    analyst: '#ec4899',        // Neon Pink
+    publisher: '#10b981',      // Neon Green
+    user: '#94a3b8',
+    result: '#6366f1'
+};
+
+// ==================== GLOBAL VARIABLES ====================
+let workflowCanvas, workflowCtx;
+let particleCanvas, particleCtx;
+let workflowAnimationId;
+let particleAnimationId;
 let activeNodes = new Set();
 let currentAnimationStep = 0;
+let particles = [];
+let mousePosition = { x: 0, y: 0 };
+let isMobile = window.innerWidth <= 768;
 
-// Initialize on DOM load
+// ==================== INITIALIZE ON DOM LOAD ====================
 document.addEventListener('DOMContentLoaded', () => {
+    initParticleBackground();
     initWorkflowCanvas();
     initAnimations();
     initCounterAnimations();
@@ -84,142 +99,248 @@ document.addEventListener('DOMContentLoaded', () => {
     initCardEffects();
     initParallax();
     initTypingEffect();
-    initParticles();
     initAgentDetails();
     startWorkflowAnimation();
     createWorkflowNodes();
+    initMouseGlow();
+    initFlipCards();
+    initMagneticCards();
+    initPerformanceMonitoring();
 });
 
-// Initialize Workflow Canvas
-function initWorkflowCanvas() {
-    canvas = document.getElementById('workflowCanvas');
-    if (!canvas) return;
+// ==================== FULLSCREEN PARTICLE BACKGROUND ====================
+function initParticleBackground() {
+    particleCanvas = document.getElementById('particleCanvas');
+    if (!particleCanvas) return;
 
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    drawWorkflow();
+    particleCtx = particleCanvas.getContext('2d');
+    resizeParticleCanvas();
+    
+    window.addEventListener('resize', () => {
+        resizeParticleCanvas();
+        initParticles();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        mousePosition.x = e.clientX;
+        mousePosition.y = e.clientY;
+    });
+
+    initParticles();
+    animateParticles();
 }
 
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
-    canvas.height = 600;
-    drawWorkflow();
+function resizeParticleCanvas() {
+    particleCanvas.width = window.innerWidth;
+    particleCanvas.height = window.innerHeight;
 }
 
-// Draw Workflow
-function drawWorkflow() {
-    if (!ctx) return;
+function initParticles() {
+    particles = [];
+    const particleCount = isMobile ? 50 : 100; // Performance optimization for mobile
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * particleCanvas.width,
+            y: Math.random() * particleCanvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            radius: Math.random() * 2 + 1,
+            color: Math.random() > 0.5 ? COLORS.coordinator : COLORS.developer
+        });
+    }
+}
 
-    // Draw edges
-    workflowEdges.forEach(edge => {
-        const fromNode = workflowNodes.find(n => n.id === edge.from);
-        const toNode = workflowNodes.find(n => n.id === edge.to);
-        if (fromNode && toNode) {
-            drawEdge(fromNode, toNode);
+function animateParticles() {
+    particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+
+    // Update and draw particles
+    particles.forEach((particle, i) => {
+        // Mouse repulsion effect
+        const dx = mousePosition.x - particle.x;
+        const dy = mousePosition.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const repulsionRadius = 150;
+
+        if (distance < repulsionRadius) {
+            const force = (repulsionRadius - distance) / repulsionRadius;
+            particle.vx -= (dx / distance) * force * 0.5;
+            particle.vy -= (dy / distance) * force * 0.5;
+        }
+
+        // Update position
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Boundary check
+        if (particle.x < 0 || particle.x > particleCanvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > particleCanvas.height) particle.vy *= -1;
+
+        // Draw particle
+        particleCtx.beginPath();
+        particleCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        particleCtx.fillStyle = particle.color;
+        particleCtx.fill();
+
+        // Draw connections
+        for (let j = i + 1; j < particles.length; j++) {
+            const other = particles[j];
+            const d = Math.sqrt(
+                (particle.x - other.x) ** 2 + 
+                (particle.y - other.y) ** 2
+            );
+
+            if (d < 100) {
+                const opacity = 1 - d / 100;
+                particleCtx.beginPath();
+                particleCtx.strokeStyle = `rgba(99, 102, 241, ${opacity * 0.3})`;
+                particleCtx.lineWidth = 0.5;
+                particleCtx.moveTo(particle.x, particle.y);
+                particleCtx.lineTo(other.x, other.y);
+                particleCtx.stroke();
+            }
         }
     });
 
-    // Draw nodes
+    particleAnimationId = requestAnimationFrame(animateParticles);
+}
+
+// ==================== WORKFLOW CANVAS ====================
+function initWorkflowCanvas() {
+    workflowCanvas = document.getElementById('workflowCanvas');
+    if (!workflowCanvas) return;
+
+    workflowCtx = workflowCanvas.getContext('2d');
+    resizeWorkflowCanvas();
+    window.addEventListener('resize', resizeWorkflowCanvas);
+    drawWorkflow();
+}
+
+function resizeWorkflowCanvas() {
+    const container = workflowCanvas.parentElement;
+    workflowCanvas.width = container.clientWidth;
+    workflowCanvas.height = 600;
+    drawWorkflow();
+}
+
+function drawWorkflow() {
+    if (!workflowCtx) return;
+
+    workflowCtx.clearRect(0, 0, workflowCanvas.width, workflowCanvas.height);
+
+    // Draw edges with gradient and animation
+    workflowEdges.forEach((edge, index) => {
+        const fromNode = workflowNodes.find(n => n.id === edge.from);
+        const toNode = workflowNodes.find(n => n.id === edge.to);
+        if (fromNode && toNode) {
+            drawAnimatedEdge(fromNode, toNode, edge, index);
+        }
+    });
+
+    // Draw nodes with glow effects
     workflowNodes.forEach(node => {
-        drawNode(node);
+        drawEnhancedNode(node);
     });
 }
 
-function drawEdge(from, to) {
-    const startX = from.x * canvas.width;
-    const startY = from.y * canvas.height;
-    const endX = to.x * canvas.width;
-    const endY = to.y * canvas.height;
+function drawAnimatedEdge(from, to, edge, index) {
+    const startX = from.x * workflowCanvas.width;
+    const startY = from.y * workflowCanvas.height;
+    const endX = to.x * workflowCanvas.width;
+    const endY = to.y * workflowCanvas.height;
 
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    
     // Bezier curve for smooth connections
     const controlX1 = startX + (endX - startX) * 0.5;
     const controlY1 = startY;
     const controlX2 = startX + (endX - startX) * 0.5;
     const controlY2 = endY;
-    
-    ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, endX, endY);
-    
-    ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
 
-    // Add gradient to edge
-    const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.1)');
-    gradient.addColorStop(1, 'rgba(123, 44, 191, 0.1)');
-    ctx.strokeStyle = gradient;
-    ctx.stroke();
+    // Draw dashed line with animation
+    workflowCtx.beginPath();
+    workflowCtx.setLineDash([5, 5]);
+    workflowCtx.lineDashOffset = -Date.now() / 50; // Animated dash
+    workflowCtx.moveTo(startX, startY);
+    workflowCtx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, endX, endY);
+    
+    const gradient = workflowCtx.createLinearGradient(startX, startY, endX, endY);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.1)');
+    gradient.addColorStop(1, 'rgba(6, 182, 212, 0.1)');
+    workflowCtx.strokeStyle = gradient;
+    workflowCtx.lineWidth = 2;
+    workflowCtx.stroke();
+    workflowCtx.setLineDash([]); // Reset dash
+
+    // Draw beam effect for active path
+    if (activeNodes.has(from.id) && activeNodes.has(to.id)) {
+        workflowCtx.beginPath();
+        workflowCtx.moveTo(startX, startY);
+        workflowCtx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, endX, endY);
+        const activeGradient = workflowCtx.createLinearGradient(startX, startY, endX, endY);
+        activeGradient.addColorStop(0, COLORS.coordinator);
+        activeGradient.addColorStop(1, COLORS.developer);
+        workflowCtx.strokeStyle = activeGradient;
+        workflowCtx.lineWidth = 3;
+        workflowCtx.shadowColor = COLORS.coordinator;
+        workflowCtx.shadowBlur = 15;
+        workflowCtx.stroke();
+        workflowCtx.shadowBlur = 0;
+    }
 }
 
-function drawNode(node) {
-    const x = node.x * canvas.width;
-    const y = node.y * canvas.height;
+function drawEnhancedNode(node) {
+    const x = node.x * workflowCanvas.width;
+    const y = node.y * workflowCanvas.height;
     const radius = 40;
+    const isActive = activeNodes.has(node.id);
 
-    // Draw glow effect for active nodes
-    if (activeNodes.has(node.id)) {
-        const glowGradient = ctx.createRadialGradient(x, y, radius, x, y, radius * 2);
-        glowGradient.addColorStop(0, 'rgba(0, 212, 255, 0.3)');
-        glowGradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
-        ctx.beginPath();
-        ctx.arc(x, y, radius * 2, 0, Math.PI * 2);
-        ctx.fillStyle = glowGradient;
-        ctx.fill();
+    // Draw outer glow for active nodes
+    if (isActive) {
+        const glowGradient = workflowCtx.createRadialGradient(x, y, radius, x, y, radius * 2.5);
+        glowGradient.addColorStop(0, `${COLORS[node.type] || COLORS.coordinator}40`);
+        glowGradient.addColorStop(1, 'transparent');
+        workflowCtx.beginPath();
+        workflowCtx.arc(x, y, radius * 2.5, 0, Math.PI * 2);
+        workflowCtx.fillStyle = glowGradient;
+        workflowCtx.fill();
+
+        // Pulse animation
+        const pulseScale = 1 + Math.sin(Date.now() / 200) * 0.1;
+        const pulseGradient = workflowCtx.createRadialGradient(x, y, radius * pulseScale, x, y, radius * 2 * pulseScale);
+        pulseGradient.addColorStop(0, `${COLORS[node.type] || COLORS.coordinator}30`);
+        pulseGradient.addColorStop(1, 'transparent');
+        workflowCtx.beginPath();
+        workflowCtx.arc(x, y, radius * 2 * pulseScale, 0, Math.PI * 2);
+        workflowCtx.fillStyle = pulseGradient;
+        workflowCtx.fill();
     }
 
-    // Draw node circle
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    // Draw node circle with gradient
+    workflowCtx.beginPath();
+    workflowCtx.arc(x, y, radius, 0, Math.PI * 2);
 
-    // Node color based on type
-    let nodeColor;
-    switch (node.type) {
-        case 'coordinator':
-            nodeColor = '#00d4ff';
-            break;
-        case 'developer':
-            nodeColor = '#7b2cbf';
-            break;
-        case 'analyst':
-            nodeColor = '#f72585';
-            break;
-        case 'publisher':
-            nodeColor = '#00ff88';
-            break;
-        case 'user':
-            nodeColor = '#94a3b8';
-            break;
-        case 'result':
-            nodeColor = '#00d4ff';
-            break;
-        default:
-            nodeColor = '#00d4ff';
-    }
-
-    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    const nodeColor = COLORS[node.type] || COLORS.coordinator;
+    const gradient = workflowCtx.createRadialGradient(x - radius/3, y - radius/3, 0, x, y, radius);
     gradient.addColorStop(0, nodeColor);
-    gradient.addColorStop(1, adjustColorBrightness(nodeColor, -30));
-    ctx.fillStyle = gradient;
-    ctx.fill();
+    gradient.addColorStop(1, adjustColorBrightness(nodeColor, -40));
+    workflowCtx.fillStyle = gradient;
+    workflowCtx.fill();
 
     // Draw border
-    ctx.strokeStyle = activeNodes.has(node.id) ? '#00ff88' : nodeColor;
-    ctx.lineWidth = activeNodes.has(node.id) ? 3 : 2;
-    ctx.stroke();
+    workflowCtx.strokeStyle = isActive ? COLORS.publisher : nodeColor;
+    workflowCtx.lineWidth = isActive ? 3 : 2;
+    if (isActive) {
+        workflowCtx.shadowColor = nodeColor;
+        workflowCtx.shadowBlur = 20;
+    }
+    workflowCtx.stroke();
+    workflowCtx.shadowBlur = 0;
 
     // Draw label
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(node.name, x, y);
+    workflowCtx.fillStyle = '#ffffff';
+    workflowCtx.font = 'bold 12px Inter, -apple-system, sans-serif';
+    workflowCtx.textAlign = 'center';
+    workflowCtx.textBaseline = 'middle';
+    workflowCtx.fillText(node.name, x, y);
 }
 
 function adjustColorBrightness(hex, percent) {
@@ -233,7 +354,94 @@ function adjustColorBrightness(hex, percent) {
         (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
 }
 
-// Create Workflow Nodes in DOM
+// ==================== WORKFLOW ANIMATION ====================
+function startWorkflowAnimation() {
+    currentAnimationStep = 0;
+    animateWorkflow();
+}
+
+function animateWorkflow() {
+    if (currentAnimationStep >= workflowEdges.length) {
+        currentAnimationStep = 0;
+        setTimeout(animateWorkflow, 3000);
+        return;
+    }
+
+    const edge = workflowEdges[currentAnimationStep];
+    animateDataFlow(edge.from, edge.to);
+    currentAnimationStep++;
+
+    setTimeout(animateWorkflow, 2000);
+}
+
+function animateDataFlow(fromNodeId, toNodeId) {
+    const fromNode = workflowNodes.find(n => n.id === fromNodeId);
+    const toNode = workflowNodes.find(n => n.id === toNodeId);
+
+    if (!fromNode || !toNode) return;
+
+    // Activate nodes
+    activeNodes.add(fromNodeId);
+    activeNodes.add(toNodeId);
+
+    // Highlight DOM nodes
+    const fromDomNode = document.querySelector(`[data-node-id="${fromNodeId}"]`);
+    const toDomNode = document.querySelector(`[data-node-id="${toNodeId}"]`);
+    
+    if (fromDomNode) fromDomNode.classList.add('active');
+    if (toDomNode) toDomNode.classList.add('active');
+
+    // Create multiple particles for data flow
+    createDataFlowParticles(fromNode, toNode);
+
+    // Redraw canvas
+    drawWorkflow();
+
+    // Deactivate after animation
+    setTimeout(() => {
+        activeNodes.delete(fromNodeId);
+        activeNodes.delete(toNodeId);
+        
+        if (fromDomNode) fromDomNode.classList.remove('active');
+        if (toDomNode) toDomNode.classList.remove('active');
+        
+        drawWorkflow();
+    }, 2000);
+}
+
+function createDataFlowParticles(fromNode, toNode) {
+    const particlesContainer = document.querySelector('.data-flow-particles');
+    if (!particlesContainer) return;
+
+    // Create 3 particles for each data flow
+    for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const startX = fromNode.x * 100;
+            const startY = fromNode.y * 100;
+            const endX = toNode.x * 100;
+            const endY = toNode.y * 100;
+
+            particle.style.left = `${startX}%`;
+            particle.style.top = `${startY}%`;
+            particle.style.setProperty('--tx', `${endX - startX}%`);
+            particle.style.setProperty('--ty', `${endY - startY}%`);
+
+            // Add glow effect
+            particle.style.boxShadow = '0 0 10px #6366f1, 0 0 20px #6366f1';
+
+            particlesContainer.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 2000);
+        }, i * 300);
+    }
+}
+
+// ==================== WORKFLOW NODES ====================
 function createWorkflowNodes() {
     const nodesContainer = document.querySelector('.workflow-nodes');
     if (!nodesContainer) return;
@@ -281,92 +489,16 @@ function getNodeIcon(type) {
     }
 }
 
-// Start Workflow Animation
-function startWorkflowAnimation() {
-    currentAnimationStep = 0;
-    animateWorkflow();
-}
-
-function animateWorkflow() {
-    if (currentAnimationStep >= workflowEdges.length) {
-        currentAnimationStep = 0;
-        setTimeout(animateWorkflow, 3000);
-        return;
-    }
-
-    const edge = workflowEdges[currentAnimationStep];
-    animateDataFlow(edge.from, edge.to);
-    currentAnimationStep++;
-
-    setTimeout(animateWorkflow, 2000);
-}
-
-function animateDataFlow(fromNodeId, toNodeId) {
-    const fromNode = workflowNodes.find(n => n.id === fromNodeId);
-    const toNode = workflowNodes.find(n => n.id === toNodeId);
-
-    if (!fromNode || !toNode) return;
-
-    // Activate nodes
-    activeNodes.add(fromNodeId);
-    activeNodes.add(toNodeId);
-
-    // Highlight DOM nodes
-    const fromDomNode = document.querySelector(`[data-node-id="${fromNodeId}"]`);
-    const toDomNode = document.querySelector(`[data-node-id="${toNodeId}"]`);
-    
-    if (fromDomNode) fromDomNode.classList.add('active');
-    if (toDomNode) toDomNode.classList.add('active');
-
-    // Create particle
-    createParticle(fromNode, toNode);
-
-    // Redraw canvas
-    drawWorkflow();
-
-    // Deactivate after animation
-    setTimeout(() => {
-        activeNodes.delete(fromNodeId);
-        activeNodes.delete(toNodeId);
-        
-        if (fromDomNode) fromDomNode.classList.remove('active');
-        if (toDomNode) toDomNode.classList.remove('active');
-        
-        drawWorkflow();
-    }, 2000);
-}
-
-function createParticle(fromNode, toNode) {
-    const particlesContainer = document.querySelector('.data-flow-particles');
-    if (!particlesContainer) return;
-
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    
-    const startX = fromNode.x * 100;
-    const startY = fromNode.y * 100;
-    const endX = toNode.x * 100;
-    const endY = toNode.y * 100;
-
-    particle.style.left = `${startX}%`;
-    particle.style.top = `${startY}%`;
-    particle.style.setProperty('--tx', `${endX - startX}%`);
-    particle.style.setProperty('--ty', `${endY - startY}%`);
-
-    particlesContainer.appendChild(particle);
-
-    setTimeout(() => {
-        particle.remove();
-    }, 2000);
-}
-
-// Agent Details Panel
+// ==================== AGENT DETAILS PANEL ====================
 function initAgentDetails() {
-    // Add click listeners to member cards
     document.querySelectorAll('.member-card').forEach(card => {
-        card.addEventListener('click', () => {
+        card.addEventListener('click', (e) => {
+            // Don't trigger flip when clicking on back card
+            if (!e.target.closest('.flip-card') || e.target.closest('.card-back')) {
+                return;
+            }
             const agentName = card.dataset.agent;
-            if (agentName) {
+            if (agentName && !card.classList.contains('flipped')) {
                 showAgentDetails(agentName);
             }
         });
@@ -398,7 +530,6 @@ function closeAgentDetails() {
     panel.classList.remove('visible');
 }
 
-// Close panel when clicking outside
 document.addEventListener('click', (e) => {
     const panel = document.getElementById('agentDetails');
     if (panel.classList.contains('visible') && !panel.contains(e.target) && !e.target.closest('.member-card') && !e.target.closest('.workflow-node')) {
@@ -406,16 +537,18 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Initialize Counter Animations
+// ==================== COUNTER ANIMATIONS ====================
 function initCounterAnimations() {
-    const counters = document.querySelectorAll('.stat-number, .metric-value');
+    const counters = document.querySelectorAll('.stat-number, .metric-value, .case-metric .metric-value');
     
     const counterObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const counter = entry.target;
                 const target = parseInt(counter.dataset.target) || parseInt(counter.textContent);
-                animateCounter(counter, target);
+                if (!isNaN(target)) {
+                    animateCounter(counter, target);
+                }
                 counterObserver.unobserve(counter);
             }
         });
@@ -427,22 +560,32 @@ function initCounterAnimations() {
 function animateCounter(element, target) {
     let current = 0;
     const duration = 2000;
-    const increment = target / (duration / 16);
-    
-    const updateCounter = () => {
-        current += increment;
-        if (current < target) {
-            element.textContent = Math.floor(current);
+    const startTime = performance.now();
+
+    // easeOutQuart easing function
+    function easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+    }
+
+    function updateCounter(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutQuart(progress);
+        
+        current = Math.floor(easedProgress * target);
+        element.textContent = current;
+
+        if (progress < 1) {
             requestAnimationFrame(updateCounter);
         } else {
             element.textContent = target;
         }
-    };
-    
-    updateCounter();
+    }
+
+    requestAnimationFrame(updateCounter);
 }
 
-// Initialize Scroll Animations
+// ==================== SCROLL ANIMATIONS ====================
 function initScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
@@ -457,12 +600,11 @@ function initScrollAnimations() {
         });
     }, observerOptions);
 
-    // Observe sections
     document.querySelectorAll('.section').forEach(section => {
         observer.observe(section);
     });
 
-    // Add stagger animation delay to cards
+    // Stagger animation
     const addStaggerAnimation = (selector, baseDelay) => {
         const cards = document.querySelectorAll(selector);
         cards.forEach((card, index) => {
@@ -472,7 +614,6 @@ function initScrollAnimations() {
         });
     };
 
-    // Apply stagger animations
     setTimeout(() => {
         addStaggerAnimation('.member-card', 0);
         addStaggerAnimation('.case-card', 0);
@@ -481,9 +622,9 @@ function initScrollAnimations() {
     }, 500);
 }
 
-// Initialize Card Effects
+// ==================== CARD EFFECTS ====================
 function initCardEffects() {
-    const cards = document.querySelectorAll('.member-card, .capability-card, .case-card, .metric-card, .why-card');
+    const cards = document.querySelectorAll('.glass-card');
     
     cards.forEach(card => {
         card.addEventListener('mousemove', (e) => {
@@ -494,8 +635,8 @@ function initCardEffects() {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            const rotateX = (y - centerY) / 20;
-            const rotateY = (centerX - x) / 20;
+            const rotateX = (y - centerY) / 25;
+            const rotateY = (centerX - x) / 25;
 
             card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
         });
@@ -504,21 +645,47 @@ function initCardEffects() {
             card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
         });
     });
+}
 
-    // Add hover effect to skill tags
-    const skillTags = document.querySelectorAll('.skill-tag');
-    skillTags.forEach(tag => {
-        tag.addEventListener('mouseenter', () => {
-            tag.style.transform = 'scale(1.1) translateY(-2px)';
+// ==================== MAGNETIC CARDS ====================
+function initMagneticCards() {
+    const cards = document.querySelectorAll('.glass-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+
+            const magnetStrength = 0.3;
+            const moveX = x * magnetStrength;
+            const moveY = y * magnetStrength;
+
+            card.style.transform = `translate(${moveX}px, ${moveY}px)`;
         });
 
-        tag.addEventListener('mouseleave', () => {
-            tag.style.transform = 'scale(1) translateY(0)';
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translate(0, 0)';
         });
     });
 }
 
-// Initialize Parallax Effect
+// ==================== FLIP CARDS ====================
+function initFlipCards() {
+    const flipCards = document.querySelectorAll('.flip-card');
+    
+    flipCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Don't flip if clicking on back card
+            if (e.target.closest('.card-back')) {
+                return;
+            }
+            card.classList.toggle('flipped');
+        });
+    });
+}
+
+// ==================== PARALLAX EFFECT ====================
 function initParallax() {
     const heroCircles = document.querySelectorAll('.hero-bg .circle');
     
@@ -533,7 +700,36 @@ function initParallax() {
     });
 }
 
-// Initialize Typing Effect
+// ==================== MOUSE GLOW EFFECT ====================
+function initMouseGlow() {
+    const mouseGlow = document.getElementById('mouseGlow');
+    if (!mouseGlow) return;
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let glowX = mouseX;
+    let glowY = mouseY;
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function updateGlow() {
+        // Smooth follow
+        glowX += (mouseX - glowX) * 0.1;
+        glowY += (mouseY - glowY) * 0.1;
+
+        mouseGlow.style.left = `${glowX}px`;
+        mouseGlow.style.top = `${glowY}px`;
+
+        requestAnimationFrame(updateGlow);
+    }
+
+    updateGlow();
+}
+
+// ==================== TYPING EFFECT ====================
 function initTypingEffect() {
     const heroSubtitle = document.querySelector('.hero-subtitle');
     if (!heroSubtitle) return;
@@ -553,53 +749,7 @@ function initTypingEffect() {
     setTimeout(typeWriter, 1000);
 }
 
-// Initialize Particles
-function initParticles() {
-    const heroBg = document.querySelector('.hero-bg');
-    if (!heroBg) return;
-
-    function createParticle() {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        particle.style.cssText = `
-            position: absolute;
-            width: ${Math.random() * 4 + 2}px;
-            height: ${Math.random() * 4 + 2}px;
-            background: rgba(0, 212, 255, ${Math.random() * 0.5 + 0.3});
-            border-radius: 50%;
-            pointer-events: none;
-            left: ${Math.random() * 100}%;
-            top: 100%;
-            animation: particleRise ${Math.random() * 3 + 2}s linear forwards;
-        `;
-
-        heroBg.appendChild(particle);
-
-        setTimeout(() => {
-            particle.remove();
-        }, 5000);
-    }
-
-    setInterval(createParticle, 500);
-
-    // Add particle animation keyframes
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes particleRise {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px);
-                opacity: 0;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// Initialize General Animations
+// ==================== GENERAL ANIMATIONS ====================
 function initAnimations() {
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -635,10 +785,10 @@ function initAnimations() {
     document.head.appendChild(style);
 }
 
-// Smooth reveal animation
+// ==================== REVEAL ON SCROLL ====================
 function reveal() {
-    const reveals = document.querySelectorAll('.member-card, .capability-card, .case-card, .metric-card, .why-card');
-    reveals.forEach((element, index) => {
+    const reveals = document.querySelectorAll('.glass-card');
+    reveals.forEach(element => {
         const windowHeight = window.innerHeight;
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
@@ -650,7 +800,36 @@ function reveal() {
     });
 }
 
-// Performance optimization: Throttle scroll events
+// ==================== PERFORMANCE MONITORING ====================
+function initPerformanceMonitoring() {
+    let frameCount = 0;
+    let lastTime = performance.now();
+
+    function monitorFPS() {
+        const currentTime = performance.now();
+        frameCount++;
+
+        if (currentTime - lastTime >= 1000) {
+            const fps = frameCount;
+            console.log(`FPS: ${fps}`);
+            
+            // Optimize if FPS drops below 30
+            if (fps < 30 && particles.length > 50) {
+                particles = particles.slice(0, 50);
+                console.log('Optimized: Reduced particle count to 50');
+            }
+
+            frameCount = 0;
+            lastTime = currentTime;
+        }
+
+        requestAnimationFrame(monitorFPS);
+    }
+
+    monitorFPS();
+}
+
+// ==================== THROTTLE SCROLL EVENTS ====================
 let scrollTimeout;
 window.addEventListener('scroll', () => {
     if (scrollTimeout) {
@@ -661,4 +840,16 @@ window.addEventListener('scroll', () => {
     });
 });
 
-console.log('✨ Kev Team Showcase loaded successfully!');
+// ==================== RESIZE HANDLER ====================
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        isMobile = window.innerWidth <= 768;
+        if (!isMobile && particles.length < 100) {
+            initParticles();
+        }
+    }, 250);
+});
+
+console.log('✨ Kev Team Showcase loaded successfully with enhanced visual effects!');

@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kev 团队 - 智能协作系统 | 7 位专业 Agent，无限可能</title>
     <meta name="description" content="Kev 团队：7 位专业 Agent，1 个协调中心，从需求到交付端到端负责。GitHub 级别的专业编排能力。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Fullscreen Particle Background -->
+    <canvas id="particleCanvas" class="particle-background"></canvas>
+
+    <!-- Mouse Glow Effect -->
+    <div id="mouseGlow" class="mouse-glow"></div>
+
     <div class="container">
         <!-- Hero Section -->
         <section class="hero">
@@ -41,33 +50,28 @@
                     </a>
                 </div>
             </div>
-            <div class="hero-bg">
-                <div class="circle"></div>
-                <div class="circle"></div>
-                <div class="circle"></div>
-            </div>
         </section>
 
         <!-- Why Choose Us Section -->
         <section class="section why-us">
             <h2 class="section-title">为什么选择我们</h2>
             <div class="why-grid">
-                <div class="why-card">
+                <div class="why-card glass-card">
                     <div class="why-icon">✅</div>
                     <h3 class="why-title">专业分工</h3>
                     <p class="why-desc">每个 Agent 专注一个领域，深度专业化</p>
                 </div>
-                <div class="why-card">
+                <div class="why-card glass-card">
                     <div class="why-icon">✅</div>
                     <h3 class="why-title">智能编排</h3>
                     <p class="why-desc">自动识别任务类型，调度最优 Agent</p>
                 </div>
-                <div class="why-card">
+                <div class="why-card glass-card">
                     <div class="why-icon">✅</div>
                     <h3 class="why-title">端到端负责</h3>
                     <p class="why-desc">从需求到交付，全程跟踪不遗漏</p>
                 </div>
-                <div class="why-card">
+                <div class="why-card glass-card">
                     <div class="why-icon">✅</div>
                     <h3 class="why-title">质量保证</h3>
                     <p class="why-desc">验证后才交付，确保结果可靠</p>
@@ -128,129 +132,257 @@
         <section class="section members">
             <h2 class="section-title">团队成员</h2>
             <div class="members-grid">
-                <div class="member-card" data-role="coordinator" data-agent="Kev">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">K</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Kev</h3>
-                    <p class="member-role">协调官</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">策略规划</span>
-                        <span class="skill-tag">资源调度</span>
-                        <span class="skill-tag">风险管理</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">调度任务: 1000+</span>
-                        <span class="member-stat">响应时间: &lt;1s</span>
-                    </div>
-                </div>
-
-                <div class="member-card" data-role="developer" data-agent="Rex">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">R</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Rex</h3>
-                    <p class="member-role">全栈工程师</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">代码开发</span>
-                        <span class="skill-tag">系统架构</span>
-                        <span class="skill-tag">Bug 修复</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">代码提交: 500+</span>
-                        <span class="member-stat">修复时间: 5min</span>
-                    </div>
-                </div>
-
-                <div class="member-card" data-role="analyst" data-agent="Doc">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">D</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Doc</h3>
-                    <p class="member-role">文档专家</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">知识管理</span>
-                        <span class="skill-tag">文档生成</span>
-                        <span class="skill-tag">内容结构化</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">文档数: 200+</span>
-                        <span class="member-stat">阅读量: 10k+</span>
+                <div class="member-card glass-card neon-card flip-card" data-role="coordinator" data-agent="Kev">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">K</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Kev</h3>
+                            <p class="member-role">协调官</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">策略规划</span>
+                                <span class="skill-tag">资源调度</span>
+                                <span class="skill-tag">风险管理</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">调度任务: 1000+</span>
+                                <span class="member-stat">响应时间: &lt;1s</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Python</span>
+                                <span>AI Orchestrator</span>
+                                <span>Task Planning</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>GitHub Issue 修复</span>
+                                <span>团队展示页面</span>
+                                <span>自动化工作流</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="member-card" data-role="collector" data-agent="Scout">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">S</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Scout</h3>
-                    <p class="member-role">信息采集官</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">信息检索</span>
-                        <span class="skill-tag">数据采集</span>
-                        <span class="skill-tag">趋势分析</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">数据源: 1000+</span>
-                        <span class="member-stat">准确率: 98%</span>
-                    </div>
-                </div>
-
-                <div class="member-card" data-role="publisher" data-agent="Morgan">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">M</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Morgan</h3>
-                    <p class="member-role">发布专员</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">内容发布</span>
-                        <span class="skill-tag">媒体运营</span>
-                        <span class="skill-tag">渠道管理</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">发布数: 500+</span>
-                        <span class="member-stat">自动化: 100%</span>
-                    </div>
-                </div>
-
-                <div class="member-card" data-role="advisor" data-agent="Sage">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">S</span>
-                        <div class="avatar-glow"></div>
-                    </div>
-                    <h3 class="member-name">Sage</h3>
-                    <p class="member-role">战略顾问</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">战略规划</span>
-                        <span class="skill-tag">决策支持</span>
-                        <span class="skill-tag">风险评估</span>
-                    </div>
-                    <div class="member-stats">
-                        <span class="member-stat">咨询数: 200+</span>
-                        <span class="member-stat">准确率: 95%</span>
+                <div class="member-card glass-card neon-card flip-card" data-role="developer" data-agent="Rex">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">R</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Rex</h3>
+                            <p class="member-role">全栈工程师</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">代码开发</span>
+                                <span class="skill-tag">系统架构</span>
+                                <span class="skill-tag">Bug 修复</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">代码提交: 500+</span>
+                                <span class="member-stat">修复时间: 5min</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Python</span>
+                                <span>JavaScript</span>
+                                <span>Go</span>
+                                <span>FastAPI</span>
+                                <span>React</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>前端开发</span>
+                                <span>后端 API</span>
+                                <span>数据库优化</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="member-card" data-role="verifier" data-agent="Verifier">
-                    <div class="member-avatar">
-                        <span class="avatar-initials">V</span>
-                        <div class="avatar-glow"></div>
+                <div class="member-card glass-card neon-card flip-card" data-role="analyst" data-agent="Doc">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">D</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Doc</h3>
+                            <p class="member-role">文档专家</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">知识管理</span>
+                                <span class="skill-tag">文档生成</span>
+                                <span class="skill-tag">内容结构化</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">文档数: 200+</span>
+                                <span class="member-stat">阅读量: 10k+</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Markdown</span>
+                                <span>Obsidian</span>
+                                <span>Content Generation</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>技术文档</span>
+                                <span>API 文档</span>
+                                <span>用户手册</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="member-name">Verifier</h3>
-                    <p class="member-role">质量验证</p>
-                    <div class="member-skills">
-                        <span class="skill-tag">代码审查</span>
-                        <span class="skill-tag">质量保证</span>
-                        <span class="skill-tag">合规检查</span>
+                </div>
+
+                <div class="member-card glass-card neon-card flip-card" data-role="collector" data-agent="Scout">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">S</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Scout</h3>
+                            <p class="member-role">信息采集官</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">信息检索</span>
+                                <span class="skill-tag">数据采集</span>
+                                <span class="skill-tag">趋势分析</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">数据源: 1000+</span>
+                                <span class="member-stat">准确率: 98%</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Web Scraping</span>
+                                <span>Data Analysis</span>
+                                <span>Search API</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>市场调研</span>
+                                <span>竞品分析</span>
+                                <span>数据收集</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="member-stats">
-                        <span class="member-stat">审查数: 300+</span>
-                        <span class="member-stat">发现问题: 50+</span>
+                </div>
+
+                <div class="member-card glass-card neon-card flip-card" data-role="publisher" data-agent="Morgan">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">M</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Morgan</h3>
+                            <p class="member-role">发布专员</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">内容发布</span>
+                                <span class="skill-tag">媒体运营</span>
+                                <span class="skill-tag">渠道管理</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">发布数: 500+</span>
+                                <span class="member-stat">自动化: 100%</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>CMS</span>
+                                <span>Social Media API</span>
+                                <span>Automation</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>微信公众号</span>
+                                <span>技术博客</span>
+                                <span>内容分发</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="member-card glass-card neon-card flip-card" data-role="advisor" data-agent="Sage">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">S</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Sage</h3>
+                            <p class="member-role">战略顾问</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">战略规划</span>
+                                <span class="skill-tag">决策支持</span>
+                                <span class="skill-tag">风险评估</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">咨询数: 200+</span>
+                                <span class="member-stat">准确率: 95%</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Strategic Planning</span>
+                                <span>Risk Analysis</span>
+                                <span>Decision Support</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>技术咨询</span>
+                                <span>架构评审</span>
+                                <span>风险评估</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="member-card glass-card neon-card flip-card" data-role="verifier" data-agent="Verifier">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="member-avatar">
+                                <span class="avatar-initials">V</span>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <h3 class="member-name">Verifier</h3>
+                            <p class="member-role">质量验证</p>
+                            <div class="member-skills">
+                                <span class="skill-tag">代码审查</span>
+                                <span class="skill-tag">质量保证</span>
+                                <span class="skill-tag">合规检查</span>
+                            </div>
+                            <div class="member-stats">
+                                <span class="member-stat">审查数: 300+</span>
+                                <span class="member-stat">发现问题: 50+</span>
+                            </div>
+                        </div>
+                        <div class="card-back">
+                            <h4 class="back-title">技术栈</h4>
+                            <div class="back-skills">
+                                <span>Code Review</span>
+                                <span>Quality Assurance</span>
+                                <span>Compliance</span>
+                            </div>
+                            <h4 class="back-title">成功案例</h4>
+                            <div class="back-cases">
+                                <span>代码审查</span>
+                                <span>质量检查</span>
+                                <span>合规验证</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,19 +392,19 @@
         <section class="section success-cases">
             <h2 class="section-title">成功案例</h2>
             <div class="cases-grid">
-                <div class="case-card">
+                <div class="case-card glass-card">
                     <div class="case-number">01</div>
                     <div class="case-content">
                         <h3 class="case-title">GitHub Issue 自动修复</h3>
                         <p class="case-desc">自动化识别、分析、修复 GitHub Issues，自动提交 PR</p>
                         <div class="case-metrics">
                             <div class="case-metric">
-                                <span class="metric-value">100+</span>
+                                <span class="metric-value" data-target="100">0</span>
                                 <span class="metric-label">GitHub PR</span>
                             </div>
                             <div class="case-metric">
-                                <span class="metric-value">60%</span>
-                                <span class="metric-label">成功率</span>
+                                <span class="metric-value" data-target="60">0</span>
+                                <span class="metric-label">成功率 %</span>
                             </div>
                         </div>
                         <div class="case-agents">
@@ -284,7 +416,7 @@
                     </div>
                 </div>
 
-                <div class="case-card">
+                <div class="case-card glass-card">
                     <div class="case-number">02</div>
                     <div class="case-content">
                         <h3 class="case-title">团队展示页面</h3>
@@ -295,8 +427,8 @@
                                 <span class="metric-label">部署时间</span>
                             </div>
                             <div class="case-metric">
-                                <span class="metric-value">100%</span>
-                                <span class="metric-label">成功率</span>
+                                <span class="metric-value" data-target="100">0</span>
+                                <span class="metric-label">成功率 %</span>
                             </div>
                         </div>
                         <div class="case-agents">
@@ -307,15 +439,15 @@
                     </div>
                 </div>
 
-                <div class="case-card">
+                <div class="case-card glass-card">
                     <div class="case-number">03</div>
                     <div class="case-content">
                         <h3 class="case-title">微信公众号文章发布</h3>
                         <p class="case-desc">端到端自动化：内容生成 → 文档撰写 → 自动发布</p>
                         <div class="case-metrics">
                             <div class="case-metric">
-                                <span class="metric-value">100%</span>
-                                <span class="metric-label">自动化</span>
+                                <span class="metric-value" data-target="100">0</span>
+                                <span class="metric-label">自动化 %</span>
                             </div>
                             <div class="case-metric">
                                 <span class="metric-value">5min</span>
@@ -336,25 +468,25 @@
         <section class="section metrics">
             <h2 class="section-title">实绩数据</h2>
             <div class="metrics-grid">
-                <div class="metric-card">
+                <div class="metric-card glass-card">
                     <div class="metric-icon">📊</div>
                     <div class="metric-value" data-target="95">0</div>
                     <div class="metric-label">成功率 %</div>
                     <div class="metric-desc">95%+ 的任务成功率</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card glass-card">
                     <div class="metric-icon">⚡</div>
                     <div class="metric-value" data-target="60">0</div>
                     <div class="metric-label">平均响应时间 (秒)</div>
                     <div class="metric-desc">&lt; 1 分钟快速响应</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card glass-card">
                     <div class="metric-icon">✅</div>
                     <div class="metric-value" data-target="100">0</div>
                     <div class="metric-label">已完成任务</div>
                     <div class="metric-desc">100+ 任务成功交付</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card glass-card">
                     <div class="metric-icon">🔀</div>
                     <div class="metric-value" data-target="100">0</div>
                     <div class="metric-label">GitHub PR</div>
