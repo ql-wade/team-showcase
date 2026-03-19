@@ -1259,6 +1259,19 @@ body {
     color: var(--text-primary);
 }
 
+/* Error Message */
+#error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #dc2626;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    z-index: 10000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
 /* Performance optimizations */
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -1268,4 +1281,10 @@ body {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Spatial partitioning optimization hints */
+.workflow-container,
+.particle-background {
+    contain: layout style paint;
 }

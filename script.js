@@ -1,3 +1,5 @@
+'use strict';
+
 // ==================== AGENT DATA ====================
 const agentData = {
     'Kev': {
@@ -83,51 +85,122 @@ let workflowCanvas, workflowCtx;
 let particleCanvas, particleCtx;
 let workflowAnimationId;
 let particleAnimationId;
+let workflowTimeoutId;
+let particleCleanupFn;
 let activeNodes = new Set();
 let currentAnimationStep = 0;
 let particles = [];
 let mousePosition = { x: 0, y: 0 };
 let isMobile = window.innerWidth <= 768;
 
+// ==================== CLEANUP FUNCTIONS ====================
+function cleanupAnimations() {
+    if (particleAnimationId) {
+        cancelAnimationFrame(particleAnimationId);
+        particleAnimationId = null;
+    }
+    if (workflowAnimationId) {
+        cancelAnimationFrame(workflowAnimationId);
+        workflowAnimationId = null;
+    }
+    if (workflowTimeoutId) {
+        clearTimeout(workflowTimeoutId);
+        workflowTimeoutId = null;
+    }
+}
+
+function cleanupEventListeners() {
+    // Remove window event listeners
+    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('mousemove', handleMouseMove);
+}
+
+// Add missing resize function
+function resizeParticleCanvas() {
+    if (particleCanvas) {
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+    }
+}
+
 // ==================== INITIALIZE ON DOM LOAD ====================
 document.addEventListener('DOMContentLoaded', () => {
-    initParticleBackground();
-    initWorkflowCanvas();
-    initAnimations();
-    initCounterAnimations();
-    initScrollAnimations();
-    initCardEffects();
-    initParallax();
-    initTypingEffect();
-    initAgentDetails();
-    startWorkflowAnimation();
-    createWorkflowNodes();
-    initMouseGlow();
-    initFlipCards();
-    initMagneticCards();
-    initPerformanceMonitoring();
+    try {
+        initParticleBackground();
+        initWorkflowCanvas();
+        initAnimations();
+        initCounterAnimations();
+        initScrollAnimations();
+        initCardEffects();
+        initParallax();
+        initTypingEffect();
+        initAgentDetails();
+        startWorkflowAnimation();
+        createWorkflowNodes();
+        initMouseGlow();
+        initFlipCards();
+        initMagneticCards();
+        initPerformanceMonitoring();
+        
+        console.log('✨ Kev Team Showcase initialized successfully!');
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        showErrorMessage('部分功能初始化失败，请刷新页面重试');
+    }
+});
+
+// ==================== GLOBAL ERROR HANDLING ====================
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
 });
 
 // ==================== FULLSCREEN PARTICLE BACKGROUND ====================
 function initParticleBackground() {
-    particleCanvas = document.getElementById('particleCanvas');
-    if (!particleCanvas) return;
+    try {
+        particleCanvas = document.getElementById('particleCanvas');
+        if (!particleCanvas) {
+            console.warn('Particle canvas not found');
+            return;
+        }
 
-    particleCtx = particleCanvas.getContext('2d');
-    resizeParticleCanvas();
-    
-    window.addEventListener('resize', () => {
+        particleCtx = particleCanvas.getContext('2d', { 
+            alpha: false,  // Performance optimization
+            desynchronized: true  // Allow browser to render asynchronously
+        });
+        
+        if (!particleCtx) {
+            throw new Error('Failed to get 2D context');
+        }
+        
         resizeParticleCanvas();
+        
+        // Store event handler references for later removal
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('mousemove', handleMouseMove);
+
         initParticles();
-    });
+        animateParticles();
+    } catch (error) {
+        console.error('Particle background init failed:', error);
+        // Provide fallback - static background
+        document.body.style.background = 'var(--dark-bg)';
+    }
+}
 
-    window.addEventListener('mousemove', (e) => {
-        mousePosition.x = e.clientX;
-        mousePosition.y = e.clientY;
-    });
-
+// Separate resize handler for easier cleanup
+function handleResize() {
+    resizeParticleCanvas();
     initParticles();
-    animateParticles();
+}
+
+// Separate mousemove handler for easier cleanup
+function handleMouseMove(e) {
+    mousePosition.x = e.clientX;
+    mousePosition.y = e.clientY;
 }
 
 function resizeParticleCanvas() {
@@ -137,7 +210,8 @@ function resizeParticleCanvas() {
 
 function initParticles() {
     particles = [];
-    const particleCount = isMobile ? 50 : 100; // Performance optimization for mobile
+    const MAX_PARTICLES = isMobile ? 50 : 80; // Limit particles for performance
+    const particleCount = Math.min(isMobile ? 50 : 80, MAX_PARTICLES); // Even stricter limit
 
     for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -151,58 +225,111 @@ function initParticles() {
     }
 }
 
-function animateParticles() {
-    particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-
-    // Update and draw particles
-    particles.forEach((particle, i) => {
-        // Mouse repulsion effect
-        const dx = mousePosition.x - particle.x;
-        const dy = mousePosition.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const repulsionRadius = 150;
-
-        if (distance < repulsionRadius) {
-            const force = (repulsionRadius - distance) / repulsionRadius;
-            particle.vx -= (dx / distance) * force * 0.5;
-            particle.vy -= (dy / distance) * force * 0.5;
+// Spatial Grid for optimizing particle connections (O(n²) -> O(n))
+class SpatialGrid {
+    constructor(cellSize = 100) {
+        this.cellSize = cellSize;
+        this.grid = new Map();
+    }
+    
+    clear() {
+        this.grid.clear();
+    }
+    
+    insert(particle) {
+        const key = this.getCellKey(particle.x, particle.y);
+        if (!this.grid.has(key)) {
+            this.grid.set(key, []);
         }
-
-        // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Boundary check
-        if (particle.x < 0 || particle.x > particleCanvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > particleCanvas.height) particle.vy *= -1;
-
-        // Draw particle
-        particleCtx.beginPath();
-        particleCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        particleCtx.fillStyle = particle.color;
-        particleCtx.fill();
-
-        // Draw connections
-        for (let j = i + 1; j < particles.length; j++) {
-            const other = particles[j];
-            const d = Math.sqrt(
-                (particle.x - other.x) ** 2 + 
-                (particle.y - other.y) ** 2
-            );
-
-            if (d < 100) {
-                const opacity = 1 - d / 100;
-                particleCtx.beginPath();
-                particleCtx.strokeStyle = `rgba(99, 102, 241, ${opacity * 0.3})`;
-                particleCtx.lineWidth = 0.5;
-                particleCtx.moveTo(particle.x, particle.y);
-                particleCtx.lineTo(other.x, other.y);
-                particleCtx.stroke();
+        this.grid.get(key).push(particle);
+    }
+    
+    getNearby(x, y) {
+        const nearby = [];
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const key = this.getCellKey(x + dx * this.cellSize, y + dy * this.cellSize);
+                const cell = this.grid.get(key);
+                if (cell) nearby.push(...cell);
             }
         }
-    });
+        return nearby;
+    }
+    
+    getCellKey(x, y) {
+        return `${Math.floor(x / this.cellSize)},${Math.floor(y / this.cellSize)}`;
+    }
+}
 
-    particleAnimationId = requestAnimationFrame(animateParticles);
+function animateParticles() {
+    try {
+        particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+
+        // Create spatial grid for optimization
+        const spatialGrid = new SpatialGrid(100);
+        particles.forEach(particle => {
+            spatialGrid.insert(particle);
+        });
+
+        // Update and draw particles
+        particles.forEach((particle, i) => {
+            // Mouse repulsion effect
+            const dx = mousePosition.x - particle.x;
+            const dy = mousePosition.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const repulsionRadius = 150;
+
+            if (distance < repulsionRadius) {
+                const force = (repulsionRadius - distance) / repulsionRadius;
+                particle.vx -= (dx / distance) * force * 0.5;
+                particle.vy -= (dy / distance) * force * 0.5;
+            }
+
+            // Update position
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+
+            // Boundary check
+            if (particle.x < 0 || particle.x > particleCanvas.width) particle.vx *= -1;
+            if (particle.y < 0 || particle.y > particleCanvas.height) particle.vy *= -1;
+
+            // Draw particle
+            particleCtx.beginPath();
+            particleCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+            particleCtx.fillStyle = particle.color;
+            particleCtx.fill();
+
+            // Draw connections using spatial grid (optimized O(n) instead of O(n²))
+            const nearbyParticles = spatialGrid.getNearby(particle.x, particle.y);
+            nearbyParticles.forEach(other => {
+                if (other !== particle) {
+                    const d = Math.sqrt(
+                        (particle.x - other.x) ** 2 + 
+                        (particle.y - other.y) ** 2
+                    );
+
+                    if (d < 100) {
+                        const opacity = 1 - d / 100;
+                        particleCtx.beginPath();
+                        particleCtx.strokeStyle = `rgba(99, 102, 241, ${opacity * 0.3})`;
+                        particleCtx.lineWidth = 0.5;
+                        particleCtx.moveTo(particle.x, particle.y);
+                        particleCtx.lineTo(other.x, other.y);
+                        particleCtx.stroke();
+                    }
+                }
+            });
+        });
+
+        particleAnimationId = requestAnimationFrame(animateParticles);
+    } catch (error) {
+        console.error('Particle animation error:', error);
+        // Stop animation to prevent further errors
+        if (particleAnimationId) {
+            cancelAnimationFrame(particleAnimationId);
+            particleAnimationId = null;
+        }
+    }
 }
 
 // ==================== WORKFLOW CANVAS ====================
@@ -361,17 +488,38 @@ function startWorkflowAnimation() {
 }
 
 function animateWorkflow() {
-    if (currentAnimationStep >= workflowEdges.length) {
-        currentAnimationStep = 0;
-        setTimeout(animateWorkflow, 3000);
-        return;
+    try {
+        if (!workflowEdges || workflowEdges.length === 0) {
+            console.warn('Workflow edges not defined');
+            return;
+        }
+        
+        if (currentAnimationStep >= workflowEdges.length) {
+            currentAnimationStep = 0;
+            workflowTimeoutId = setTimeout(animateWorkflow, 3000);
+            return;
+        }
+
+        const edge = workflowEdges[currentAnimationStep];
+        if (!edge || !edge.from || !edge.to) {
+            console.error('Invalid workflow edge at index', currentAnimationStep);
+            currentAnimationStep++;
+            workflowTimeoutId = setTimeout(animateWorkflow, 2000);
+            return;
+        }
+        
+        animateDataFlow(edge.from, edge.to);
+        currentAnimationStep++;
+
+        workflowTimeoutId = setTimeout(animateWorkflow, 2000);
+    } catch (error) {
+        console.error('Workflow animation error:', error);
+        // Clear any pending timeouts
+        if (workflowTimeoutId) {
+            clearTimeout(workflowTimeoutId);
+            workflowTimeoutId = null;
+        }
     }
-
-    const edge = workflowEdges[currentAnimationStep];
-    animateDataFlow(edge.from, edge.to);
-    currentAnimationStep++;
-
-    setTimeout(animateWorkflow, 2000);
 }
 
 function animateDataFlow(fromNodeId, toNodeId) {
@@ -510,17 +658,30 @@ function showAgentDetails(agentName) {
     if (!agent) return;
 
     const panel = document.getElementById('agentDetails');
-    document.getElementById('agentName').textContent = agentName;
-    document.getElementById('agentRole').textContent = agent.role;
+    if (!panel) return;
+
+    // Validate and sanitize inputs
+    const safeArray = (arr, defaultVal = []) => Array.isArray(arr) ? arr : defaultVal;
+    const escapeHtml = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    document.getElementById('agentName').textContent = escapeHtml(agentName);
+    document.getElementById('agentRole').textContent = escapeHtml(agent.role || '');
 
     const skillsContainer = document.getElementById('agentSkills');
-    skillsContainer.innerHTML = agent.skills.map(skill => `<span>${skill}</span>`).join('');
+    skillsContainer.innerHTML = safeArray(agent.skills)
+        .map(skill => `<span>${escapeHtml(skill)}</span>`).join('');
 
     const stackContainer = document.getElementById('agentStack');
-    stackContainer.innerHTML = agent.stack.map(tech => `<span>${tech}</span>`).join('');
+    stackContainer.innerHTML = safeArray(agent.stack)
+        .map(tech => `<span>${escapeHtml(tech)}</span>`).join('');
 
     const casesContainer = document.getElementById('agentCases');
-    casesContainer.innerHTML = agent.cases.map(c => `<span>${c}</span>`).join('');
+    casesContainer.innerHTML = safeArray(agent.cases)
+        .map(c => `<span>${escapeHtml(c)}</span>`).join('');
 
     panel.classList.add('visible');
 }
@@ -800,34 +961,98 @@ function reveal() {
     });
 }
 
+// ==================== UTILITY FUNCTIONS ====================
+function showErrorMessage(message) {
+    // Create error message element if it doesn't exist
+    let errorEl = document.getElementById('error-message');
+    if (!errorEl) {
+        errorEl = document.createElement('div');
+        errorEl.id = 'error-message';
+        errorEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #dc2626;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        `;
+        document.body.appendChild(errorEl);
+    }
+    
+    errorEl.textContent = message;
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        if (errorEl.parentNode) {
+            errorEl.parentNode.removeChild(errorEl);
+        }
+    }, 5000);
+}
+
 // ==================== PERFORMANCE MONITORING ====================
 function initPerformanceMonitoring() {
     let frameCount = 0;
     let lastTime = performance.now();
+    let monitorAnimationId;
 
     function monitorFPS() {
-        const currentTime = performance.now();
-        frameCount++;
+        try {
+            const currentTime = performance.now();
+            frameCount++;
 
-        if (currentTime - lastTime >= 1000) {
-            const fps = frameCount;
-            console.log(`FPS: ${fps}`);
-            
-            // Optimize if FPS drops below 30
-            if (fps < 30 && particles.length > 50) {
-                particles = particles.slice(0, 50);
-                console.log('Optimized: Reduced particle count to 50');
+            if (currentTime - lastTime >= 1000) {
+                const fps = frameCount;
+                console.log(`FPS: ${fps}`);
+                
+                // Optimize if FPS drops below 30
+                if (fps < 30 && particles.length > 50) {
+                    particles = particles.slice(0, 50);
+                    console.log('Optimized: Reduced particle count to 50');
+                }
+
+                frameCount = 0;
+                lastTime = currentTime;
             }
 
-            frameCount = 0;
-            lastTime = currentTime;
+            monitorAnimationId = requestAnimationFrame(monitorFPS);
+        } catch (error) {
+            console.error('Performance monitoring error:', error);
+            if (monitorAnimationId) {
+                cancelAnimationFrame(monitorAnimationId);
+            }
         }
-
-        requestAnimationFrame(monitorFPS);
     }
 
     monitorFPS();
 }
+
+// ==================== CLEANUP ON PAGE UNLOAD ====================
+window.addEventListener('beforeunload', () => {
+    try {
+        // Cancel all animation frames
+        if (particleAnimationId) {
+            cancelAnimationFrame(particleAnimationId);
+        }
+        if (workflowAnimationId) {
+            cancelAnimationFrame(workflowAnimationId);
+        }
+        
+        // Clear all timeouts
+        if (workflowTimeoutId) {
+            clearTimeout(workflowTimeoutId);
+        }
+        
+        // Clean up event listeners
+        cleanupEventListeners();
+        
+        console.log('Resources cleaned up');
+    } catch (error) {
+        console.error('Cleanup error:', error);
+    }
+});
 
 // ==================== THROTTLE SCROLL EVENTS ====================
 let scrollTimeout;
