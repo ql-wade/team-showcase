@@ -5,6 +5,25 @@
     box-sizing: border-box;
 }
 
+/* Performance Optimizations */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
 :root {
     /* Cyberpunk Color Palette */
     --primary-color: #6366f1;       /* Cyber Purple */
@@ -61,7 +80,10 @@ body {
     z-index: 0;
     transform: translate(-50%, -50%);
     transition: opacity 0.3s ease;
-    will-change: transform, left, top;
+    will-change: transform;
+    /* Use transform3d for GPU acceleration */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* ===== GLASS CARD EFFECT ===== */
@@ -137,6 +159,10 @@ body {
     height: 100%;
     transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
+    /* Performance optimization */
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .flip-card.flipped .card-inner {
@@ -768,6 +794,10 @@ body {
     position: relative;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Performance optimization */
+    will-change: transform;
+    /* GPU acceleration */
+    transform: translateZ(0);
 }
 
 .member-card:hover {
