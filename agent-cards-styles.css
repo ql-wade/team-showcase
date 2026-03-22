@@ -1,0 +1,494 @@
+/* ===== AGENT CARDS SHOWCASE ===== */
+
+.agent-cards-showcase {
+    position: relative;
+    padding: 6rem 0;
+}
+
+.agent-cards-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin: 2rem 0;
+}
+
+.agent-cards-scroll {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 2rem 2rem 4rem 2rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.agent-cards-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Individual Agent Card */
+.agent-card {
+    flex: 0 0 auto;
+    width: 320px;
+    min-width: 320px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    scroll-snap-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.agent-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--primary-color);
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+}
+
+.agent-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+}
+
+/* Card Header */
+.agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.agent-card-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.agent-card-avatar::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    opacity: 0.3;
+    animation: avatarGlow 2s infinite;
+}
+
+@keyframes avatarGlow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+.agent-card-name {
+    flex: 1;
+}
+
+.agent-card-name h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.agent-card-role {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Card Content */
+.agent-card-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.agent-skill-tag {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.agent-skill-tag:hover {
+    background: var(--primary-color);
+    color: var(--dark-bg);
+    transform: scale(1.05);
+}
+
+/* Card Detail Panel (Revealed on Hover) */
+.agent-card-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.agent-card:hover .agent-card-detail {
+    max-height: 400px;
+    opacity: 1;
+}
+
+.agent-detail-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.agent-detail-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.agent-detail-item {
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+}
+
+.agent-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.agent-case-item {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: var(--success-color);
+}
+
+/* Scroll Navigation Arrows */
+.scroll-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(22, 33, 62, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.scroll-nav svg {
+    width: 24px;
+    height: 24px;
+}
+
+.scroll-nav:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.scroll-nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.scroll-prev {
+    left: 1rem;
+}
+
+.scroll-next {
+    right: 1rem;
+}
+
+.scroll-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.scroll-nav:disabled:hover {
+    background: rgba(22, 33, 62, 0.8);
+    border-color: var(--border-color);
+    transform: translateY(-50%) scale(1);
+    box-shadow: none;
+}
+
+/* Scroll Indicators */
+.scroll-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.scroll-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.3);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.scroll-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.scroll-indicator.active {
+    background: var(--primary-color);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+.scroll-indicator:hover::before {
+    width: 16px;
+    height: 16px;
+    opacity: 0.3;
+}
+
+/* Auto-scroll Toggle */
+.auto-scroll-toggle {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+}
+
+.toggle-btn[aria-pressed="false"] .toggle-icon {
+    content: "▶";
+}
+
+.toggle-btn[aria-pressed="false"] .toggle-text {
+    content: "手动滚动";
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .agent-cards-scroll {
+        padding: 1rem 1rem 3rem 1rem;
+    }
+
+    .agent-card {
+        width: 280px;
+        min-width: 280px;
+        padding: 1.5rem;
+    }
+
+    .agent-card-header {
+        gap: 0.75rem;
+    }
+
+    .agent-card-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 1.5rem;
+    }
+
+    .agent-card-name h3 {
+        font-size: 1.3rem;
+    }
+
+    .scroll-nav {
+        width: 40px;
+        height: 40px;
+    }
+
+    .scroll-nav svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .scroll-prev {
+        left: 0.5rem;
+    }
+
+    .scroll-next {
+        right: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .agent-card {
+        width: 260px;
+        min-width: 260px;
+        padding: 1.25rem;
+    }
+
+    .agent-card-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .agent-card-name h3 {
+        font-size: 1.2rem;
+    }
+
+    .agent-card-role {
+        font-size: 0.8rem;
+    }
+
+    .scroll-nav {
+        display: none; /* Hide arrows on mobile, use touch instead */
+    }
+
+    .toggle-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .agent-cards-scroll {
+        scroll-behavior: auto;
+    }
+
+    .agent-card,
+    .scroll-nav,
+    .toggle-btn {
+        transition: none;
+    }
+
+    .agent-card-avatar::before {
+        animation: none;
+    }
+}
+
+/* Focus styles for keyboard navigation */
+.agent-card:focus-visible,
+.scroll-nav:focus-visible,
+.toggle-btn:focus-visible,
+.scroll-indicator:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Loading State */
+.agent-cards-scroll.loading {
+    pointer-events: none;
+}
+
+.agent-card.loading {
+    opacity: 0.5;
+}
+
+/* Empty State */
+.agent-cards-empty {
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+/* Performance optimizations */
+.agent-cards-scroll {
+    contain: layout style;
+}
+
+.agent-card {
+    will-change: transform;
+    contain: layout paint;
+}
+
+.scroll-nav {
+    contain: layout style paint;
+}
+
+/* Animation for card entrance */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.agent-card.animate-in {
+    animation: cardSlideIn 0.5s ease-out forwards;
+}

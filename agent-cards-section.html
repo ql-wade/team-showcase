@@ -1,0 +1,37 @@
+        <!-- Agent Cards Showcase Section -->
+        <section class="section agent-cards-showcase" aria-labelledby="agent-cards-title">
+            <h2 class="section-title" id="agent-cards-title">Agent 能力展示</h2>
+            <p class="section-subtitle">滑动查看每位 Agent 的专业技能和典型案例</p>
+
+            <!-- Scroll Container -->
+            <div class="agent-cards-container" role="region" aria-label="Agent 卡片展示">
+                <div class="agent-cards-scroll" id="agentCardsScroll">
+                    <!-- Cards will be rendered by JavaScript -->
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button class="scroll-nav scroll-prev" aria-label="向左滚动">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <button class="scroll-nav scroll-next" aria-label="向右滚动">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+
+                <!-- Scroll Indicators -->
+                <div class="scroll-indicators" id="scrollIndicators" role="tablist">
+                    <!-- Indicators will be rendered by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Auto-scroll Toggle -->
+            <div class="auto-scroll-toggle">
+                <button class="toggle-btn" id="autoScrollToggle" aria-pressed="true">
+                    <span class="toggle-icon">⏸</span>
+                    <span class="toggle-text">自动滚动</span>
+                </button>
+            </div>
+        </section>
