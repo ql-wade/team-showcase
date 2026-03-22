@@ -462,7 +462,7 @@
         const b = (num & 0x0000FF) + amount;
         const newNum = Math.min(Math.max(0, Math.min(255, r)) << 16) |
                        Math.min(Math.max(0, Math.min(255, g)) << 8) |
-                       Math.min(Math.max(0, Math.min(255, b));
+                       Math.min(Math.max(0, Math.min(255, b)));
         return '#' + newNum.toString(16).padStart(6, '0');
     }
 
